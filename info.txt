@@ -1,0 +1,123 @@
+Crear un analizador léxico desde cero es un proyecto ambicioso que implica comprender y diseñar un lexer personalizado para procesar un lenguaje específico. Aquí hay una guía básica de cómo puedes empezar a construir un analizador léxico en un lenguaje de programación como Python, sin utilizar librerías externas:
+
+1. **Define el lenguaje**: Lo primero que debes hacer es definir las reglas y estructura de tu lenguaje. Es importante comprender cómo se verán los tokens en tu lenguaje y cuáles son las reglas que los definen. Por ejemplo, si estás creando un lexer para un lenguaje de marcado simple, los tokens podrían ser etiquetas HTML como `<html>`, `<p>`, `<div>`, etc.
+
+2. **Crea un flujo de entrada**: Necesitas una forma de proporcionar al analizador léxico el código fuente que debe analizar. Esto puede ser un archivo de texto o una cadena de texto.
+
+3. **Diseña un loop de análisis**: Implementa un bucle que recorra el flujo de entrada y divídalo en tokens. Este bucle deberá identificar palabras clave, símbolos, números, cadenas, etc., según las reglas de tu lenguaje.
+
+4. **Usa expresiones regulares o funciones personalizadas**: Las expresiones regulares son una herramienta poderosa para reconocer patrones en un texto. Puedes utilizar expresiones regulares para encontrar tokens como identificadores, números, cadenas, etc. También puedes implementar funciones personalizadas para manejar casos más complejos.
+
+5. **Crea estructuras de datos para representar tokens**: Debes definir cómo representarás los tokens que encuentres. Puedes usar objetos, diccionarios o tuplas para almacenar información sobre cada token, como su tipo y valor.
+
+6. **Maneja espacios en blanco y comentarios**: Tu lexer debe ser capaz de ignorar espacios en blanco y comentarios, si los hay en tu lenguaje.
+
+7. **Maneja errores léxicos**: Debes implementar la capacidad de detectar y manejar errores léxicos, como caracteres no reconocidos.
+
+8. **Pruebas y depuración**: Prueba tu analizador léxico con diferentes ejemplos de código fuente para asegurarte de que funcione correctamente. Utiliza técnicas de depuración para identificar y solucionar problemas.
+
+9. **Integración con el analizador sintáctico**: Por lo general, el analizador léxico es parte de un proceso más amplio de análisis de un lenguaje. Asegúrate de que el formato de los tokens que produce tu lexer sea adecuado para ser consumido por el analizador sintáctico.
+
+Recuerda que la complejidad de tu analizador léxico dependerá en gran medida de la complejidad de tu lenguaje. Para lenguajes simples, un lexer básico puede ser suficiente, pero para lenguajes más complejos, es posible que necesites implementar un lexer más sofisticado. También, ten en cuenta que la creación de un lexer completo es un proyecto que lleva tiempo y esfuerzo.
+
+
+
+
+
+
+            #sin recusividad
+            '''
+            # S4 -> clave_1 S5
+            elif estado_actual == 'S4':
+                print ('clave1')
+                estado_actual = self._info(estado_actual, self.claves)
+                print(self.claves)
+                estado_actual = self._token('"', 'S5', estado_actual)
+
+            elif estado_actual == 'S6':
+                estado_actual = self._token(',', 'S6', 'S7')
+            
+            elif estado_actual == 'S7':
+                estado_actual = self._token('"', 'S6', 'S8')
+
+            elif estado_actual == 'S8':
+                print ('clave2')
+                estado_sig = self._info(estado_actual, self.claves)
+                print(self.claves)
+                estado_actual = self._token('"', 'S8', estado_sig)'''
+                
+
+
+class ExitRecursion(Exception):
+    pass
+
+def _claves(self, estadoActual):
+    # ... existing code ...
+
+    elif self.lineas[self.index] == ']':
+        print('estamos dentro de ]]]]]')
+        raise ExitRecursion
+
+    # ... existing code ...
+
+try:
+    _claves(estado_sig)
+except ExitRecursion:
+    estado_actual = 'S8'
+
+
+
+
+---> FUNCIONES <---
+
+comentarios
+    # cualquier cadena
+
+comentarios multilíneas
+    '''
+cadena de cualquier tipo con
+saltos de lineas en cualquier posición
+    '''
+
+imprimir(str)
+    imprimir(" cadena ");
+    imprimir("final");
+    resultado: cadena final
+
+imprimirln(str)
+    imprimirln(" reporte ");
+    imprimirln(" de abarroteria  ")
+    resultado: reporte \ndeabarroteria
+
+contero()
+    conteo();
+    resultado: la cantidad de registos que hay
+
+promerdio(parametro)
+    promedio("stock");
+    resultado: el promedio de la clave que da
+    
+contarsi(parametro, valor)
+    contarsi("stock", 0);
+    resultado: la cantidad de registros que tienen el valor dado
+
+datos()
+    datos();
+    resultado imprime los registros
+
+sumar(parametro)
+    sumar("stock");
+    resultado: es la suma del parametro
+
+max(parametro)
+    max("precio_venta");
+    resultado: el valor maximo de del parametro
+
+min(parametro)
+    min("precio_compra");
+    resultado: el valor minimo del campo
+
+exportarReporte(str)
+    exportarReporte("Titulo de la tabla");
+    resultado: genera un archivo html
+

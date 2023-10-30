@@ -1,0 +1,21 @@
+9 -> Registros S10
+S10 -> = S11
+S11 ->[ S12
+
+
+
+S12 -> { S13
+S13 -> valor1 S14
+S14 -> , S15
+S15 -> valor2 S16
+S16 -> , S17
+S17 -> valor3 S18
+S18 -> , S19
+S19 -> valor4 S20
+S20 -> , S21
+S21 -> valor5 S22
+S22 -> } S23
+S23 -> E
+
+S23 -> ] S24
+S24 -> funciones S25
