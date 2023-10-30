@@ -1,10 +1,12 @@
-from Productos import productos
 
-ruta = '/Users/gio/Desktop/LAB_LFP_2s23/Proyecto2/archivo1.bizdata'
-
+from objetos import Objetos
+from objetos import Funciones
+'''
+#ruta = '/Users/gio/Desktop/LAB_LFP_2s23/Proyecto2/LFP_S2_2023_Proyecto2_202100229/archivo1.bizdata'
+ruta = '/Users/gio/Desktop/LAB_LFP_2s23/Proyecto2/LFP_S2_2023_Proyecto2_202100229/prueba.bizdata'
 
 with open(ruta, 'r') as archivo:
-    contenido = archivo.read()
+    contenido = archivo.read()'''
 
 
 '''for linea in contenido:
@@ -21,8 +23,13 @@ class Analizador:
         self.index = 0 #POSICION DE CARACTERES EN LA ENTRADA
         self.fila = 1 #FILA ACTUAL
         self.columna = 1 #COLUMNA ACTUAL
+        
         self.claves = [] #El nombre de las claves
-        self.lista_resgistros = [] # Lista con listas de los valores de Registro
+        self.lista_resgistros = [] # Lista con listas de los valores de Registro -> que seran objetos Productos
+
+        self.lista_resultados = [] #lista en donde guardo los resultados
+
+        self.lista_token = [] #lista para guadar los token 
 
         self.ListaErroresS = [] # LISTA PARA GUARDAR ERRORES
         self.ListaErroresL = []
@@ -45,12 +52,29 @@ class Analizador:
             # Si aún no hemos alcanzado el final del texto, juntar el token
             text = self._juntar(self.index, len(token))
             # Luego, analizar el token
+            # Luego, analizar el token
             if self._analizar(token, text):
-                self.index += len(token) - 1
-                self.columna += len(token) - 1
-                return estado_sig
-            else:
-                return 'ERROR'
+                # Asegurarse de que solo devolvemos estado_sig si hemos encontrado una coincidencia completa con el token.
+                # Aquí es donde se ha realizado el cambio. Ahora comprobamos que el texto coincide completamente con el token antes de devolver estado_sig.
+                if (text) == (token):
+
+                    tokenD = token
+                    lineaD = self.fila
+                    columnaD = self.columna
+
+                    diccionario = {
+                        "token": tokenD,
+                        "linea": lineaD,
+                        "columna": columnaD
+                    }
+
+                    self.lista_token.append(diccionario)
+
+
+                    self.index += len(token) - 1
+                    self.columna += len(token) - 1
+                    return estado_sig
+            return 'ERROR'
         else:
             return estado_actual
 
@@ -69,22 +93,53 @@ class Analizador:
             tokem_tmp = ""
             for i in texto:
                 #CUANDO LA LETRA HAGA MATCH CON EL TOKEN ENTRA
-                print('COMBINACION -> ',i , '==', token[count])
+                #print('COMBINACION -> ',i , '==', token[count])
                 if str(i) == str(token[count]):
                     tokem_tmp += i  
                     count += 1 
                 else:
                     #print('ERROR1')
                     return False
+                    #return None
                 
             print(f'\nENCONTRE --> {tokem_tmp} <--\n')
-            return True
+            #return 
+            #return tokem_tmp
+            return tokem_tmp == token
         except:
             #print('ERROR2')
             return False
+            #return None
 
-    def analizarCadena():
-        pass
+    #analizar cadena para las funciones (de un solo parametro)
+    def _analizarCadena(self):
+        estado_aux = ""
+        tmp = self.index
+        cadena = ""
+        while self.lineas[tmp] != "":
+            
+            
+            # IDENTIFICAR SALTO DE LINEA
+            if self.lineas[tmp] == '\n':
+                self.fila + self.fila + 1
+                return 'ERROR'
+            
+            elif self.lineas[tmp] == '"'and estado_aux == '':
+                print("INICIO")
+                estado_aux = "INICIO"
+            elif self.lineas[tmp] == '"' and estado_aux == 'INICIO':
+                print("fin")
+                return [cadena, tmp]
+            elif estado_aux == 'INICIO':
+                cadena += self.lineas[tmp]
+                print(f'Cadena) - {self.lineas[tmp] } | FILA - {self.fila}  | COLUMNA - {self.columna}')
+
+            #INCREMENTAR POSICION
+            if tmp < len(self.lineas) - 1:
+                tmp +=1
+                self.columna = self.columna+1
+            else:
+                break
 
     def _compile(self):
         estado_actual = 'S0'
@@ -105,12 +160,58 @@ class Analizador:
 
             #S0 -> Claves S1
             if estado_actual == 'S0':
-                comentarioSimple = self._token('#', 'S0', 'Comentario')
-                if comentarioSimple == "Comentario":
-                    print('Aqui va un comentario')
-                    self._comentarioSimple()
-                else:
-                    estado_actual = self._token('Claves', 'S0', 'S1')
+                parametro = ''
+                valor = 0
+                funciones = ['#', "'''", "imprimir", 'Imprimirln']
+                #S0 -> # S_01|''' S_01|imprimir S_01|imprimirlnS_01
+                for i in funciones:
+                    estado_actual = self._token(i, 'S0', 'S_01')
+                    if estado_actual == "S_01":
+                        instruccion = i
+                        if i == '#':
+                            self._comentarioSimple()
+                            estado_actual = 'S0'
+
+                        elif i == "'''":
+                            self._comentarioMulti()
+                            estado_actual = 'S0'
+
+                        elif i == "imprimir" or i == "Imprimirln":
+                            self.index = self.index + 1
+
+                            # S25 -> ( S26
+                            if estado_actual == 'S_01':
+                                estado_actual = self._token('(', 'S_01', 'S_02')
+
+                            if estado_actual == 'S_02':
+                                self.index = self.index+1
+                                result = self._analizarCadena()
+                                parametro = result[0]
+                                #print('--->', parametro ,'<---')
+                                #print('--->', len(parametro) ,'<---')
+                                
+                                self.index = result[1]
+                                estado_actual = 'S_03'
+
+                            if estado_actual == 'S_03':
+                                self.index = self.index +1
+                                estado_actual = self._token(')', 'S_03', 'S_04')
+
+                            if estado_actual == 'S_04':
+                                self.index = self.index + 1
+                                estado_actual = self._token(';', 'S_04', 'S_05')
+
+                            if estado_actual == 'S_05':
+                                self.haciendo_laFuncion(i,parametro,valor)
+                                self.index = self.index + 1
+                                estado_actual = "S0"
+                        break
+                    else:
+                        estado_actual = self._token('Claves', 'S0', 'S1')
+                        if estado_actual == 'S1':
+                            break
+                
+
             # S1 -> = S2   
             elif estado_actual == 'S1':
                 estado_actual = self._token('=', 'S1', 'S2')
@@ -133,12 +234,56 @@ class Analizador:
 
             #S9 -> Registros S10
             elif estado_actual == 'S9':
-                comentarioSimple = self._token('#', 'S9', 'Comentario')
-                if comentarioSimple == "Comentario":
-                    print('Aqui va un comentario')
-                    self._comentarioSimple()
-                else:
-                    estado_actual= self._token('Registros', 'S9', 'S10')
+                parametro = ''
+                valor = 0
+                funciones = ['#', "'''", "imprimir", 'Imprimirln']
+                for i in funciones:
+                    estado_actual = self._token(i, 'S9', 'S_01')
+                    if estado_actual == "S_01":
+                        if i == '#':
+                            self._comentarioSimple()
+                            estado_actual = 'S9'
+
+                        elif i == "'''":
+                            self._comentarioMulti()
+                            estado_actual = 'S9'
+
+                        elif i == "imprimir" or i == "Imprimirln":
+                            self.index = self.index + 1
+
+                            # S25 -> ( S26
+                            if estado_actual == 'S_01':
+                                estado_actual = self._token('(', 'S_01', 'S_02')
+
+                            if estado_actual == 'S_02':
+                                self.index = self.index+1
+                                result = self._analizarCadena()
+                                parametro = result[0]
+                                print('--->', parametro ,'<---')
+                                print('--->', len(parametro) ,'<---')
+                                
+                                self.index = result[1]
+                                estado_actual = 'S_03'
+
+                            if estado_actual == 'S_03':
+                                self.index = self.index +1
+                                estado_actual = self._token(')', 'S_03', 'S_04')
+
+                            if estado_actual == 'S_04':
+                                self.index = self.index + 1
+                                estado_actual = self._token(';', 'S_04', 'S_05')
+
+                            if estado_actual == 'S_05':
+                                self.haciendo_laFuncion(i,parametro,valor)
+                                self.index = self.index + 1
+                                estado_actual = "S9"
+                        break
+                    else:
+                        estado_actual = self._token('Registros', 'S9', 'S10')
+                        if estado_actual == 'S10':
+                            break
+                
+            
 
             #S10 -> = S11
             elif estado_actual == 'S10':
@@ -178,10 +323,9 @@ class Analizador:
                 break
 
     def _comentarioSimple(self):
-        estado_actual = 'S0'
         #mientras no sea vacio se sale
         while self.lineas[self.index+1] != "":
-            print(f'CC) CARACTER - {self.lineas[self.index] } | ESTADO - {estado_actual} | FILA - {self.fila}  | COLUMNA - {self.columna}')
+            print(f'CC) CARACTER - {self.lineas[self.index] } | FILA - {self.fila}  | COLUMNA - {self.columna}')
             if self.lineas[self.index] == '\n':
                 return
 
@@ -225,7 +369,7 @@ class Analizador:
                 print(self.claves)
                 #S5 -> " S6 (comillas de cierre)
                 estado_actual = self._token('"', estado_sig, 'S6')
-
+            #S6 -> , S7
             elif estado_actual == 'S6':
                 estado_actual = self._token(',', 'S6', 'S7')
             
@@ -291,16 +435,40 @@ class Analizador:
             else:
                 self.columna +=1
 
+            
             # S12 -> { S13 (llave de inico)
             if estado_actual == 'S12':
-                estado_actual = self._token('{', 'S12', 'S13')
+
+                funciones = ['#', "'''"]
+
+                for i in funciones:
+                    estado_actual = self._token(i, 'S0', 'S_01')
+                    if estado_actual == "S_01":
+                        instruccion = i
+                        if i == '#':
+                            self._comentarioSimple()
+                            estado_actual = 'S12'
+
+                        elif i == "'''":
+                            self._comentarioMulti()
+                            estado_actual = 'S12'
+                        break
+                    else:
+                        estado_actual = self._token('{', 'S12', 'S13')
+                        if estado_actual == 'S13':
+                            break
+            
+
+                """# S12 -> { S13 (llave de inico)
+                if estado_actual == 'S12':
+                    estado_actual = self._token('{', 'S12', 'S13')"""
 
             #aqui debo guardar los valores
             # S13 -> valores S14
             elif estado_actual == 'S13':
                 estado_sig = self._infoRegistros(estado_actual, lista_temp)
                 #retornar S14
-                print(lista_temp)
+                #print(lista_temp)
                 # S14 -> , S15 
                 estado_actual = self._token(',', estado_sig, 'S13')
                 if estado_actual == "ERROR":
@@ -358,41 +526,132 @@ class Analizador:
 
     # Debe ser recursivo para hallar todas las funciones posibles 
     def _funciones(self, estadoActual):
-            #S3
+        instruccion = ''
+        parametro = ''
+        valor = 0
+
+        #S24
         estado_actual = estadoActual
         #mientras no sea vacio se sale
         while self.lineas[self.index] != "":
-            print(f'claves) CARACTER - {self.lineas[self.index] } | ESTADO - {estado_actual} | FILA - {self.fila}  | COLUMNA - {self.columna}')
+            
+            print(f'Funciones) CARACTER - {self.lineas[self.index] } | ESTADO - {estado_actual} | FILA - {self.fila}  | COLUMNA - {self.columna}')
             # IDENTIFICAR SALTO DE LINEA
             if self.lineas[self.index] == '\n':
                 self.fila += 1
                 self.columna = 1
 
-            elif self.lineas[self.index] == ']':
+            elif self.lineas[self.index] == '<':
                 #S7 -> ] S8
-                raise ExitRecursion
+                return
             else:
                 self.columna +=1
 
-            # S3 -> " S4 (comillas de inico)
-            if estado_actual == 'S3':
-                estado_actual = self._token('"', 'S3', 'S4')
+            # S24 -> funciones S25
+            if estado_actual == 'S24':
+                
+                funcionesCC = ['#', "'''"]
 
-            # S4 -> clave_1 S5
-            elif estado_actual == 'S4':
-                estado_sig = self._info(estado_actual, self.claves)
-                print(self.claves)
-                #S5 -> " S6 (comillas de cierre)
-                estado_actual = self._token('"', estado_sig, 'S6')
+                for i in funcionesCC:
+                    estado_actual = self._token(i, 'S24', 'S_01')
+                    if estado_actual == "S_01":
+                        if i == '#':
+                            self._comentarioSimple()
+                            estado_actual = 'S24'
 
-            elif estado_actual == 'S6':
-                estado_actual = self._token(',', 'S6', 'S7')
-            
-            #aqui se vuelve recursivo
-            # S7 -> " S3 (comillas de inico)
-            elif estado_actual == 'S7':
-                estado_sig = 'S3'
-                self._claves(estado_sig)
+                        elif i == "'''":
+                            self._comentarioMulti()
+                            estado_actual = 'S24'
+                        break
+                    else:
+                        #estado_actual = 'ERROR'
+                        #iterar para todas las funciones
+                        #imprimir, imprimirln, conteo, promedio, contarsi, datos, sumar, max, min, exportarReporte
+                        funciones = ['imprimir', 'Imprimirln', 'conteo', 'promedio', 'contarsi', 'datos', 'sumar', 'max', 'min', 'exportarReporte']
+                        
+                        for i in funciones:
+                            estado_actual = self._token(i, 'S24', 'S25')
+                            
+                            if estado_actual != "ERROR":
+                                instruccion = i
+                                break
+                        if estado_actual == 'S25':
+                            break
+
+
+                """estado_actual = self._token('#', 'S24', 'comentario')
+                if estado_actual == 'comentario':
+                    self._comentarioSimple()
+                    estado_actual = 'S24'
+                else:
+                    
+                    #iterar para todas las funciones
+                    #imprimir, imprimirln, conteo, promedio, contarsi, datos, sumar, max, min, exportarReporte
+                    funciones = ['imprimir', 'Imprimirln', 'conteo', 'promedio', 'contarsi', 'datos', 'sumar', 'max', 'min', 'exportarReporte', '#']
+                    
+                    for i in funciones:
+                        estado_actual = self._token(i, 'S24', 'S25')
+                        
+                        if estado_actual != "ERROR":
+                            instruccion = i
+                            break"""
+
+
+
+            # S25 -> ( S26
+            elif estado_actual == 'S25':
+                estado_actual = self._token('(', 'S25', 'S26')
+                #         1                    2                      3                   4                 5               6               7
+                if (instruccion == "imprimir") or (instruccion == "Imprimirln") or (instruccion== "promedio") or (instruccion == "sumar") or (instruccion == "max") or (instruccion== "min") or (instruccion == "exportarReporte"):
+                    estado_actual = 'S26'
+
+                #           1                    2
+                elif (instruccion == "conteo") or (instruccion == "datos"):
+                    estado_actual = 'S27'
+
+                #           1
+                elif (instruccion == "contarsi"):
+                    estado_actual = 'S26'
+
+            # S4 -> cadena S5
+            elif estado_actual == 'S26':
+                result = self._analizarCadena()
+                parametro = result[0]
+                #print('--->', parametro ,'<---')
+                #print('--->', len(parametro) ,'<---')
+                
+                self.index = result[1]
+                estado_actual = 'S27'
+
+
+            elif estado_actual == 'S27':
+                estado_actual = self._token(')', 'S27', 'S28')
+                if estado_actual == 'ERROR':
+                    estado_actual = 'S27'
+                    estado_actual = self._token(',', 'S27', 'S_28')
+
+            elif estado_actual == 'S28':
+                estado_actual = self._token(';', 'S28', 'S29')
+
+            elif estado_actual == 'S_28':
+                #leer un numero y retornar el siguiente estado de de cierre de parentecis "S27"
+                # Llamada a la función
+                palabra = ''
+                estado_sig, valor = self._parametro2(estadoActual, palabra)
+                
+                print('palabra: ', valor)
+
+                if estado_sig == 'S27':
+                    estado_actual = estado_sig
+                    self.index =self.index-1
+
+
+            elif estado_actual == 'S29':
+                self.haciendo_laFuncion(instruccion,parametro,valor)
+                # Aqui vuelvo recursivo para que lea todas las funciones
+                estado_actual = 'S24'
+                self.index +=1
+                self._funciones(estado_actual)
 
             #INCREMENTAR POSICION
             if self.index < len(self.lineas) - 1:
@@ -400,13 +659,109 @@ class Analizador:
             else:
                 break
 
+    def _parametro2(self, estadoActual, valor):
+        estado_actual = estadoActual
+        palabra = ""  # Inicializa una cadena vacía para almacenar la palabra leída
+
+        while self.index < len(self.lineas):
+            print(f'Parametro) CARACTER - {self.lineas[self.index]} | ESTADO - {estado_actual} | FILA - {self.fila} | COLUMNA - {self.columna}')
+
+            if self.lineas[self.index] == ')':
+                if palabra:
+                    valor = palabra.replace(' ', '')  # Almacena la palabra en la variable "valor" sin espacios
+                return 'S27', valor
+
+            # IDENTIFICAR SALTO DE LINEA
+            elif self.lineas[self.index] == '\n':
+                self.fila += 1
+                self.columna = 0
+            else:
+                palabra += self.lineas[self.index]  # Agrega el carácter a la palabra
+
+            self.columna += 1
+
+            # INCREMENTAR POSICIÓN
+            if self.index < len(self.lineas) - 1:
+                self.index += 1
+            else:
+                break
+
+        return 'S27', valor  # Retorna 'S27' y el valor encontrado después del bucle
+
+    def haciendo_laFuncion(self, instruccionO:str, campo, _valor):
+        instruccion = instruccionO
+        parametro = campo
+        valor = _valor
+        valor = int(valor)
+        # le paso la lista de los registros que registro
+        lista_lista = self.lista_resgistros
+
+        # hago que la lista de listas se haga una sola lista de productos
+        lista2 = Objetos(lista_lista)
+        lista_de_productos = lista2.asignarValores()
+
+        # con la lista de productos podre realizar las funciones
+        # ya que tengo informacion para trabajar
+        # creamos un objeto para poder acceder a la los metodos de la clase Funciones 
+        # que son las funciones que tenemos que realizar
+        funciones = Funciones(lista_de_productos)
+
+        # Aqui se realizaran las funciones
+        # para tipoA
+        if instruccion == "imprimir":
+            resultado = funciones.imprimir(parametro)
+            print('>>>', resultado)
+            
+
+        elif instruccion == "Imprimirln":
+            resultado = funciones.imprimirln(parametro)
+            print('>>>', resultado)
+
+        elif instruccion== "promedio":
+            resultado = funciones.promedio(parametro)
+            print('>>>', resultado)
+
+        elif instruccion == "sumar":
+            resultado = funciones.sumar(parametro)
+            print('>>>', resultado)
+
+        elif instruccion == "max":
+            resultado = funciones.max(parametro)
+            print('>>>', resultado)
+
+        elif instruccion== "min":
+            resultado = funciones.min(parametro)
+            print('>>>', resultado)
+
+        elif instruccion == "exportarReporte":
+            resultado = funciones.exportarReporte(parametro,f'{parametro}.html')
+            print('>>>', resultado)
+
+        #           1                    2
+        elif instruccion == "conteo":
+            resultado = funciones.conteo()
+            print('>>>', resultado)
+
+        elif instruccion == "datos":
+            resultado = funciones.datos()
+            for elemento in resultado:
+                print(elemento)
+
+        #           1
+        elif (instruccion == "contarsi"):
+            resultado = funciones.contarsi(parametro, valor)
+            print('>>>', resultado)
+
+        if resultado:
+            self.lista_resultados.append(resultado)
+                    
+
     def _comentarioMulti(self):
-            estado_actual = 'S0'
             
             #mientras no sea vacio se sale
             while self.lineas[self.index] != "":
                 
-                print(f'MULTI - CARACTER - {self.lineas[self.index] } | ESTADO - {estado_actual} | FILA - {self.fila}  | COLUMNA - {self.columna}')
+                print(f'CM) CARACTER - {self.lineas[self.index] } |  FILA - {self.fila}  | COLUMNA - {self.columna}')
                 
                 # IDENTIFICAR SALTO DE LINEA
                 if self.lineas[self.index] == "'":
@@ -414,7 +769,7 @@ class Analizador:
                     if self.lineas[self.index] == "'":
                         self.index = self.index + 1
                         if self.lineas[self.index] == "'":
-                            return 'comentario'
+                            return
 
                 # IDENTIFICAR SALTO DE LINEA
                 elif self.lineas[self.index] == '\n':
@@ -435,48 +790,17 @@ class Analizador:
 
 
 
-a = Analizador(contenido)
+'''a = Analizador(contenido)
 a._compile()
 
-print('\nTitulos ',a.claves)
-for i in a.claves:
-    i = i.replace(" ", "")
-    print(i)
+for resultados in a.lista_resultados:
 
-
-print('\n',a.lista_resgistros,'\n')
-for i in a.lista_resgistros:
-    print(i)
-
-print('conteo() ', len(a.lista_resgistros))
-
-
-for i in a.lista_resgistros:
-    print('------------')
-    count = 1
-    for j in i:
-        j = j.replace(" ", "")
-        print(f"{count}) ",j)
-        count = count + 1
-    print('------------')
-    print('\n')
-
-# Crear una lista para almacenar objetos de la clase Productos
-lista_de_productos = []
-
-# Iterar a través de las listas internas y crear objetos
-for lista_2 in a.lista_resgistros:
-    codigo, producto, precio_compra, precio_venta, stock = lista_2
-    producto_obj = productos(codigo, producto, precio_compra, precio_venta, stock)
-    lista_de_productos.append(producto_obj)
-
-# Ahora, lista_de_productos contiene objetos de la clase Productos con los valores de lista_2
-# Puedes acceder a los atributos de los objetos de la siguiente manera:
-for producto_obj in lista_de_productos:
-    print('-----------------------------')
-    print(f"Código: {(producto_obj.codigo)}")
-    print(f"Producto: {producto_obj.producto}")
-    print(f"Precio de Compra: {(producto_obj.precio_compra)}")
-    print(f"Precio de Venta: {producto_obj.precio_venta}")
-    print(f"Stock: {producto_obj.stock}")
-    print('-----------------------------\n')
+    if type(resultados) == list:
+        for lista in resultados:
+            print('>>>', end="") 
+            for valor in lista:
+                print(" ",valor, end='  ')
+            print()  # Imprimir una nueva línea entre cada lista
+        print()
+    else:
+        print('>>>', resultados)'''

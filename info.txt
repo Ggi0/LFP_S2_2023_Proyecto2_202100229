@@ -79,20 +79,24 @@ cadena de cualquier tipo con
 saltos de lineas en cualquier posición
     '''
 
+tipoA
 imprimir(str)
     imprimir(" cadena ");
     imprimir("final");
     resultado: cadena final
 
+tipoA
 imprimirln(str)
     imprimirln(" reporte ");
     imprimirln(" de abarroteria  ")
     resultado: reporte \ndeabarroteria
 
+tipoB
 contero()
     conteo();
     resultado: la cantidad de registos que hay
 
+tipoA
 promerdio(parametro)
     promedio("stock");
     resultado: el promedio de la clave que da
@@ -101,23 +105,113 @@ contarsi(parametro, valor)
     contarsi("stock", 0);
     resultado: la cantidad de registros que tienen el valor dado
 
+tipoB
 datos()
     datos();
     resultado imprime los registros
 
+tipoA
 sumar(parametro)
     sumar("stock");
     resultado: es la suma del parametro
 
+tipoA
 max(parametro)
     max("precio_venta");
     resultado: el valor maximo de del parametro
 
+tipoA
 min(parametro)
     min("precio_compra");
     resultado: el valor minimo del campo
 
+tipoA
 exportarReporte(str)
     exportarReporte("Titulo de la tabla");
     resultado: genera un archivo html
 
+
+
+# coemntsaidsoa
+
+imprimir("Reporte de "); 
+
+#comentarios
+
+
+
+imprimir("Abarroteria"); 
+
+    sumar("stock");
+
+ 
+    #     comesntarios
+    max("precio_venta"); 
+    min("precio_compra");
+
+    exportarReporte("Reporte HTML de abarroteria");
+
+datos();
+conteo(); 
+
+contarsi("stock", 0);
+
+promedio("producto"); 
+
+imprimirln("Reporte de "); 
+imprimirln("Abarroteria"); 
+datos();
+conteo(); 
+    
+    
+contarsi("stock", 0);
+
+imprimir("fin"); # comentario 
+
+contarsi("codigo", 0);
+
+
+
+
+
+
+----------------------
+
+
+# coemntsaidsoa
+
+imprimir("Reporte de "); 
+
+#comentarios
+
+
+
+imprimir("Abarroteria"); 
+
+    sumar("stock");
+
+ 
+    #     comesntarios
+    max("precio_venta"); 
+    min("precio_compra");
+
+    exportarReporte("Reporte HTML de abarroteria");
+
+datos();
+conteo(); 
+
+contarsi("stock", 0);
+
+promedio("producto"); 
+
+imprimirln("Reporte de "); 
+imprimirln("Abarroteria"); 
+datos();
+conteo(); 
+    
+    
+contarsi("stock", 0);
+
+imprimir("fin"); # comentario 
+
+contarsi("codigo", 0);
